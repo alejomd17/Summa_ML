@@ -29,32 +29,28 @@ warnings.filterwarnings('ignore')
 class Models():
     def sarima_model(df_train, df_test, steps):
         sarima = auto_arima(df_train.tolist(),
-                                        start_p=1, start_q=1,
-                                        seasonal=True, m=12,
-                                        start_P=0, start_Q=0,
-                                        max_p=3, max_q=3, 
+                                        # start_p=1, start_q=1,
+                                        seasonal=True, 
+                                        stationary=True,
+                                        m=12,
+                                        # start_P=0, start_Q=0,
+                                        # max_p=3, max_q=3, 
                                         # max_P=5, max_Q=5,
-                                        d=1, D=1,
-                                        d_range=range(2), D_range=range(2),
+                                        # d=1, D=1,
+                                        # d_range=range(2), D_range=range(2),
                                         trace=True,
                                         error_action='ignore',
                                         suppress_warnings=True,
-                                        stepwise=True,
-                                        random_state=123,
-                                        n_fits=100,
-                                        trend=None,
-                                        method='nm',
-                                        information_criterion='aic')
-        
+                                        # stepwise=True,
+                                        # random_state=123,   
+                                        # n_fits=100,
+                                        # trend=None,
+                                        # method='nm',
+                                        # information_criterion='aic'
+                            )
         pred_sarima= sarima.predict(n_periods=steps)
         
         return sarima, pred_sarima
-
-        # RMSE_sarima = np.sqrt(mean_squared_error(df_test.values.tolist(), pred_sarima))
-        # MAPE_sarima= mean_absolute_percentage_error(df_test.values.tolist(), pred_sarima)
-        # R2_sarima = r2_score(df_test.values.tolist(), pred_sarima)
-            
-        # return RMSE_sarima, MAPE_sarima, R2_sarima, sarima, pred_sarima
 
     def lasso_model(df_train, df_test, steps):
         model_lasso = ForecasterAutoreg(
@@ -94,20 +90,11 @@ class Models():
         pred_lasso = model_lasso.predict(steps=steps)
         
         return model_lasso, pred_lasso
-        
-        # RMSE_lasso = np.sqrt(mean_squared_error(df_test.values.tolist(), pred_lasso))
-        # MAPE_lasso = mean_absolute_percentage_error(df_test.values.tolist(), pred_lasso)
-        # R2_lasso = r2_score(df_test.values.tolist(), pred_lasso)
-        
-        # return RMSE_lasso, MAPE_lasso, R2_lasso, model_lasso, pred_lasso
     
     def randomforest_model(df_train, df_test, steps):
         forecaster_rf = ForecasterAutoreg(
             regressor = RandomForestRegressor(random_state=123), # Este valor será remplazado en el grid search
             lags = 12)
-
-        # Lags utilizados como predictores
-
 
         # Hiperparámetros del regresor
         param_grid = {'n_estimators': [100, 300, 500],
@@ -141,11 +128,6 @@ class Models():
         pred_rf = forecaster_rf.predict(steps=steps)
         return forecaster_rf, pred_rf
         
-        # RMSE_rf = np.sqrt(mean_squared_error(df_test.values.tolist(), pred_rf))
-        # MAPE_rf = mean_absolute_percentage_error(df_test.values.tolist(), pred_rf)
-        # R2_rf = r2_score(df_test.values.tolist(), pred_rf)
-        
-        # return RMSE_rf, MAPE_rf, R2_rf, forecaster_rf, pred_rf
 
     def xgboost_model(df_train, df_test, steps):
         forecaster_xgb = ForecasterAutoreg(
@@ -184,10 +166,3 @@ class Models():
         pred_xgb = forecaster_xgb.predict(steps=steps)
         
         return forecaster_xgb, pred_xgb
-
-        # RMSE_xgb = np.sqrt(mean_squared_error(df_test.values.tolist(), pred_xgb))
-        # MAPE_xgb = mean_absolute_percentage_error(df_test.values.tolist(), pred_xgb)
-        # R2_xgb = r2_score(df_test.values.tolist(), pred_xgb)
-        
-        # return RMSE_xgb, MAPE_xgb, R2_xgb, forecaster_xgb, pred_xgb
-    

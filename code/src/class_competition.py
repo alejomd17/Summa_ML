@@ -1,4 +1,4 @@
-from src.save_results import *
+from src.save_results import save_model, save_winner_metrics
 from src.parameters import Parameters
 import pandas as pd
 from sklearn.linear_model import LogisticRegression

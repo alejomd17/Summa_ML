@@ -2,7 +2,6 @@ import pandas as pd
 import os
 import pickle
 
-
 def save_model(model, path_models, model_name):
 
     last_version = 0.0
