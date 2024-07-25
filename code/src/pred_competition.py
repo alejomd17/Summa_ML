@@ -30,7 +30,7 @@ def evaluate_models(steps, df_train, df_test, df_filtered_de_escalate, col_prono
     
     RMSE_sarima = np.sqrt(mean_squared_error(df_test, pred_sarima))
     MAPE_sarima= mean_absolute_percentage_error(df_test, pred_sarima)
-    R2_sarima = r2_score(pred_sarima, df_test)
+    R2_sarima = r2_score(df_test,pred_sarima)
         
     RMSE_lasso = np.sqrt(mean_squared_error(df_test, pred_lasso))
     MAPE_lasso = mean_absolute_percentage_error(df_test, pred_lasso)
