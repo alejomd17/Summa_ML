@@ -1,26 +1,29 @@
 <img src="./assets/logo_summa.png" alt="logo_summa" width="170"/>
 
 # Desarrollo prueba técnica Profesional Machine Learning - SUMMA
+
 [![Python](https://img.shields.io/badge/Python-3.10-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=3776AB)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com)
 
 Este Repo **Summa_ML** es el desarrollo de la prueba técnica para **Profesional Machine Learning -SUMMA**
-En este se desarrollaron los ejercicios practicos:
-   
-1. [Regresión: Pronóstico de la demanda](#regresión-pronóstico-de-la-demanda)
-2. [Clasificación: Predicción de la clase](#clasificacion_predicción-de-la-clase)
-3. [API](#API)
-4. [Completar to_predict](#completar-to_predict)
-5. [Docker](#docker)
-6. [Teoría](#teoría)
 
-## Introducción al Repo
-#### Clona el repositorio:
+## En este se desarrollaron los ejercicios:
+
+   > 0. Introducción al Repo
+   > 1. Regresión: Pronóstico de la demanda
+   > 2. Clasificación: Predicción de la clase
+   > 3. Creación de la API
+   > 4. Completar to_predict
+   > 5. Crear Docker
+   > 6. Teoría
+
+### 0. Introducción al Repo
+#### Clona el repositorio
    ```bash
    git clone https://github.com/alejomd17/Summa_ML.git
   ```
-#### Instala las dependencias:
+#### Instala las dependencias
    ```bash
    pip install -r requirements.txt
    ```
@@ -54,8 +57,8 @@ Se encuentran alojado el dockerfile y su respectiva app, para despliegue
 <img src="./assets/devops_folder.JPG" alt="code" width="300"/><img src="./assets/app_folder.JPG" alt="code" width="300"/>
 
 
-## Desarrollo de la prueba
-## 1. Regresión: Pronóstico de la demanda
+### 1. Regresión: Pronóstico de la demanda
+#### Instala las dependencias
 El desarrollo de este ejercicio se desarrolla en el script de jupyter [summa_ml_full](./code/summa_ml_full.ipynb) dentro de la carpeta [code](./code)\
 Cuenta también con los modulos dentro de la carpeta [code/src](./code/src)
 
@@ -94,19 +97,19 @@ col_y                   = Parameters.col_y--------> str: Columna yearmonth
 scales                  = Parameters.scales-------> 4 escalas: Normal, [0,1], [-1,1] y logaritmica
    ```
 Una vez establecido todo esto, se procede a ejecutar.
-#### 1. Limpieza de datos
+#### Limpieza de datos
 Los datos comienzan a ser limpiados, utilizando la función *clean_data* de [pred_preprocessing](./code/src/pred_preprocessing.py)
 Esta función, evalúa la serie de tiempo recibida y determina que valores fueron atípicos según la diferencia entre la media y 2 veces la desviación estandar, y crea las columnas atipics (1 si es atípico, 0 si no), la columna Demand_with_atipics (que es la original) y renueva la columna Demand (en la que los datos que son atípicos, se interpola para eliminar los atipicos. Esta última, será la columna que se utilizará para el resto del ejercicio.
    ```bash
 df_clean_atipics = clean_atipicis(df_demanda, col_pronos, col_y)
    ```
-#### 2. Escalamiento de los datos
+#### Escalamiento de los datos
 Se escalan los datos, es decir, se transforman según cada una de las escalas establecidas anteriormente (scales), utilizando la función *scalated_dataframe* de [pred_preprocessing](./code/src/pred_preprocessing.py)
 Esto se crea con el fin de evaluar cada una de las posibles escalamiento de los datos para comparar entre ellas y elegir la que mejor respuesta otorgue.
    ```bash
 df_standarized   = scalated_dataframe(df_clean_atipics, col_pronos)
    ```
-#### 3. Predicción
+#### Predicción
 El dataframe creado con todas las escalas se pasa por la función *fn_prediction* de [pred_predictions](./code/src/pred_predictions.py)
 Esta función crea los dataframes de train y de test y evalúa cada una de los datos escalados.
    ```bash
@@ -143,7 +146,7 @@ Y el modelo ganador, que luego será el que se utilizará para los nuevos pronó
 
 Finalmente, ya con el modelo ganador obtenido, podremos realizar el pronóstico de los nuevos meses, utilizando el modelo ganador, y en caso de requerirlo, los resultados se "reescalan", es decir, se escalan inversamente para volver a tener los datos según su nominal original. Utilizamos la función *de_escalate* de [pred_preprocessing](./code/src/pred_preprocessing.py)
 
-#### 4. Visualización y guardado de los resultados
+#### Visualización y guardado de los resultados
 Obtenido el df_pred, lo ilustraremos según los requerimientos del ejercicio.
 Esto se realiza usando *plot_pred* de [pred_predictions](./code/src/pred_predictions.py)
    ```bash
@@ -153,12 +156,13 @@ En este, se crea un dataframe en donde se almacena la data real, los pronóstico
 
 <img src="./assets/df_plot.JPG" alt="code" width="300"/>
 
-Y por último, se crea una visualización que se almacena en [pred_Demand.png](./data/output/plots/pred_Demand.png)
+Y por último, se crea una visualización que se almacena en [data/output/plots](./data/output/plots)
 
 <img src="./data/output/plots/pred_Demand.png" alt="code" width="500"/>
 
 
-## 2. Clasificación: Predicción de la clase
+### 2. Clasificación: Predicción de la clase
+#### Instala las dependencias
 El desarrollo de este ejercicio también se desarrolla en el script de jupyter [summa_ml_full](./code/summa_ml_full.ipynb) dentro de la carpeta [code](./code)\
 Cuenta también con los modulos dentro de la carpeta [code/src](./code/src)
 
@@ -188,7 +192,7 @@ Se realiza la lectura del archivo input [dataset_alpha_betha.csv](./data/input/d
 df_variables    = pd.read_csv(os.path.join(Parameters.input_path, 'dataset_alpha_betha.csv'))
    ```
 Una vez establecido todo esto, se procede a ejecutar.
-#### 1. Entrenamiento
+#### Entrenamiento
 Se dispone a entrenar el modelo que clasifique, según sus caracteristicas, si una compra es [Alpha, Betha].
 Primero, debemos obtener cuales son las variables predictoras(X) y predichas (y). Utilizamos entonces la función *data_to_class* de [class_preprocessing](./code/src/class_preprocessing.py)
    ```bash
@@ -231,7 +235,8 @@ Y el modelo ganador, que luego será el que se utilizará para los nuevos pronó
 
 <img src="./assets/models_folder.JPG" alt="code" width="300"/>
 
-#### 2. Solución con to_predict
+#### Solución to_predict
+
 > [!NOTE]
 > Acá se soluciona el ejercicio 4 de completar el to_predict
 
@@ -251,8 +256,9 @@ Estos resultados se almacenan en un dataframe junto con la fecha de corrida, el 
 
 <img src="./assets/df_class.JPG" alt="code" width="500"/>
 
-## 3. API
-La API esta diseñada con [FastAPI](https://fastapi.tiangolo.com/)
+### 3. Creación de la API
+#### Diseño de la API en FastAPI
+La API esta diseñada con [FastAPI](https://fastapi.tiangolo.com/).
 Se desarrollo un ejemplo manual del funcionamiento del API en el script de jupyter [summa_ml_full](./code/summa_ml_full.ipynb) dentro de la carpeta [code](./code)\
 Usando el modulo [manual_api_class_compras.py](./code/src/manual_api_class_compras.py) el cuál, es una representación igual de la API diseñada.
 
@@ -263,8 +269,8 @@ En esta, se deben pasar los datos de cada una de las columnas, salvo la Clase qu
 Dado esto, se construye un dataframe, similar a los que se usan (Como el to_predict) y se pasa por el predictor, es decir, se utiliza, como ya lo habíamos visto, la función *fn_classification* del modulo [class_classification](./code/src/class_classification.py) 
 Esta API devuelve un JSON con dos salidas, la primera, es el resultado de la predicción [Alpha, Betha], y la otra es el DataFrame ya con dicho resultado.
 
-### Para ejecutar la API en Bash
-Para ejecutar la API en Bash, es decir, en el Navegador, debemos correr el script que contiene la API, puesto que esta ya corre el uvicorn en la terminal *127.0.0.1:8000*
+#### Ejecutar la API
+Para ejecutar la API (en Bash, es decir, en el Navegador), debemos correr el script que contiene la API, puesto que esta ya corre el uvicorn en la terminal *127.0.0.1:8000*
    ```bash
 Summa_ML (main)
 py code/api_class_compras.py
@@ -285,10 +291,12 @@ Así como los resultados de la misma, con un caso de ejemplo:
 
 Misma validación puede hacerse también en otras plataformas como Postman.
 
-## 4. Completar to_predict
+### 4. Completar to_predict
+
 > [!NOTE]
 > El pronostico del to_predict, ya fue desarrollado con el ejercicio #2, y puede hacerse de nuevo individualmente con la API
 
+#### Solución to_predict
 Con el modelo entrenado, podemos hacer la predicción con los datos de [to_predict.csv](./data/input/to_predict.csv)
 Utilizamos también como soporte las columnas dummies mencionadas anteriormente y llenamos con los datos pronosticados en demandas del ejercicio 1 los datos de la demanda.
 Construimos los X, y. y finalmente hacemos el pronóstico usando la función *fn_classification* del modulo [class_classification](./code/src/class_classification.py) 
@@ -305,7 +313,8 @@ Estos resultados se almacenan en un dataframe junto con la fecha de corrida, el 
 
 <img src="./assets/df_class.JPG" alt="code" width="500"/>
 
-## Docker
+### 5. Crear Docker
+#### Crear el dockerfile y las carpetas devops y app
 Para construir la imagen y el contenedor del Docker, procedemos a copiar la API generada dentro de la carpeta donde se almacenará la app que ejecute la imagen.
 Entonces, se crea la carpeta [devops](./devops/) y la aplicación a la carpeta [app](./devops/app). Para este ejercicio, la API pasa a llamarse [main.py](./devops/app/main.py) y se modifican las rutas que así lo requieran.
 
@@ -317,6 +326,7 @@ Dentro de [devops](./devops/) se crea el [dockerfile](./devops/dockerfile) y se 
 
 docker_bash_create_Image.JPG
 
+#### Crear la imagen y contenedor
 Creamos la imagen del Docker en bash
    ```bash
 Summa_ML (main)
@@ -333,11 +343,11 @@ Ya con esto queda creada la imagen en Docker y se puede disponer de un contenedo
 > [!NOTE]
 > Con esto queda contruido el contenedor, y la API ya funciona tal como se mostro en el ejercicio 3 (donde se creo la API con FastAPI)
 
-## 6. Teoría
+### 6. Teoría
 > [!NOTE]  
-> Las respuestas de la parte teórica se encuentran en [teoria_.pdf](./devops/dockerfile), lo que esta escrito a continuación, es lo mismo que esta en dicho archivo.
+> Las respuestas de la parte teórica se encuentran en [teoria_.pdf](./teoria_.pdf), lo que esta escrito a continuación, es lo mismo que esta en dicho archivo.
 
-### 1. 
+#### 1
 En la empresa GA, en el área de compras necesitan CLASIFICAR y organizar los correos que llegan a la bandeja de entrada entre 4 tipos de correos (Compras cementos, Compras energía, Compras concretos y correos generales o de otra índole). Esta tarea se le encomienda a usted, como es el Gestor SR en temas de analítica e IA puede solicitar al área interesada los recursos humanos que necesite para llevar a cabo este proyecto, también puede solicitar en tecnología todo lo que necesite, además tiene las bandejas de entrada de correos históricos de los analistas que reciben estas solicitudes con aproximadamente: 5500 correos de compras cementos, 2700 correos de compras de energía, 1100 correos de compras concretos y 12876 correos generales o de otra índole.
 Explique como resolvería este problema, metodología, algoritmos, modelos, arquitectura del proyecto etc.
    ```bash
@@ -359,7 +369,7 @@ Por último, si es necesario, se construye un front ya sea cómo plataforma web 
 5. Orchestation, llevar a productivo, disponibilizar el modelo.
 6. Exposición o visualización (Si aplica)
    ```
-### 2.
+#### 2
 Seis meses después de haber desplegado un modelo de regresión en producción, los usuarios se dan cuenta que las predicciones que este está dando no son tan acertadas, se le encarga a usted como Gestor SR en temas de IA que revise que puede estar sucediendo.
 ¿Cree que el modelo esté sufriendo Drift?
 ¿Cómo puede validarlo?
@@ -370,7 +380,7 @@ Si, el modelo puede estar perdiendo predicción dado que esta dejando de lado lo
 Como lo mencioné anteriormente, una de las formas de asegurar que esto no ocurra, es reentrenando los modelos con menor tiempo, para así posibilitar que los modelos aprendan lo que sucedió recientemente y calculen un pronóstico mucho más semejante a la realidad, puesto que es probable que ocurriesen eventos de datos atípicos, tendencias, estaciones o incluso situaciones geopolíticas.
 Si es muy difícil poder lograr que se reentrene por los altos costos, se debería hacer una especie de alerta que muestre el nivel de acierto que va teniendo semana a semana y poder haciendo ajustes que no requieran modelación (por ejemplo, la suma de datos atípicos, etc).
    ```
-### 3.
+#### 3
 3.	Su equipo de trabajo está trabajando en un chatbot con generación de texto utilizando el modelo GPT-3.5, según cómo funciona este modelo, ¿cómo haría usted para hacer que las respuestas del chatbot estén siempre relacionadas a conseguir cierta información particular del usuario y no empiece a generar texto aleatorio sobre cualquier tema? 
 Explique su respuesta.
   ```bash
