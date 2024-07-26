@@ -68,7 +68,7 @@ def fn_prediction(df_gold, steps, scales, col_pronos, col_y):
     return df_pred
 
 def plot_pred(df_demanda, df_pred, col_pronos, col_y):
-    df_winner_metrics = pd.read_excel(os.path.join(Parameters.results_path,'winner_metrics_pred.xlsx'))
+    df_winner_metrics = pd.read_excel(os.path.join(Parameters.results_path,'winner_metrics_pred.xlsx'))[-1:]
     
     df_real = df_demanda[['year_month','Demand']].rename(columns={'Demand':'real'})
     df_eval = pd.DataFrame({col_y:eval(df_winner_metrics['pred_index'].iloc[0]), 'eval':eval(df_winner_metrics['pred'].iloc[0])})

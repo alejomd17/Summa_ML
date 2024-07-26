@@ -137,7 +137,7 @@ Esas métricas y pronósticos se almacenan en los resultados, en el archivo [win
 
 <img src="./assets/winner_metrics_pred.JPG" alt="code" width="300"/>
 
-Y el modelo ganador, que luego será el que se utilizará para los nuevos pronósticos se guarda como modelo versionado en la carpeta de modelos, para el ejercicio el ganador fue un modelo Sarima con los datos escalados logaritmicamente [Demand_sarima_Demand_scallg](./data/output/models/Demand_sarima_Demand_scallg-1.0.pkl)
+Y el modelo ganador, que luego será el que se utilizará para los nuevos pronósticos se guarda como modelo versionado en la carpeta de modelos, para el ejercicio el ganador fue un modelo Random Forest con los datos escalados logaritmicamente [Demand_randomforest_Demand_scallg](./data/output/models/Demand_randomforest_Demand_scallg-1.0.pkl)
 
 <img src="./assets/models_folder.JPG" alt="code" width="300"/>
 
@@ -197,6 +197,8 @@ X, y            = data_to_class(df_variables, train = True)
 En este, se hace la limpieza, transformación de las caracteristicas para tener un dataset mas homogeneo y poder convertir las variables a categoricas, según sea el caso.
 Una vez obtenidos todos y cada uno de los posibles variables dummies que podamos, vamos a guardar un archivo auxiliar que nos ayudará cuando el desarrollo este en productivo en la API y en el Docker. Este archivo es [df_col_dummies.xlsx](./data/output/results/df_col_dummies.xlsx)
 
+<img src="./assets/cols_dummies.JPG" alt="code" width="300"/>
+
 Cuando obtenemos la X, y, podemos realizar el entrenamiento para obtener el modelo con la función *train_classification* de [class_classification](./code/src/class_classification.py)
    ```bash
 train_classification(X, y)
@@ -249,29 +251,113 @@ Estos resultados se almacenan en un dataframe junto con la fecha de corrida, el 
 
 <img src="./assets/df_class.JPG" alt="code" width="500"/>
 
-## API
-Aqui
-## Completar to_predict
-y
+## 3. API
+La API esta diseñada con [FastAPI](https://fastapi.tiangolo.com/)
+Se desarrollo un ejemplo manual del funcionamiento del API en el script de jupyter [summa_ml_full](./code/summa_ml_full.ipynb) dentro de la carpeta [code](./code)\
+Usando el modulo [manual_api_class_compras.py](./code/src/manual_api_class_compras.py) el cuál, es una representación igual de la API diseñada.
+
+<img src="./assets/api.JPG" alt="code" width="400"/>
+
+La API es entonces la llamada [api_class_compras.py](./code/api_class_compras.py) dentro de la carpeta code, donde se usa la función *class_compras*
+En esta, se deben pasar los datos de cada una de las columnas, salvo la Clase que será la que se predice.
+Dado esto, se construye un dataframe, similar a los que se usan (Como el to_predict) y se pasa por el predictor, es decir, se utiliza, como ya lo habíamos visto, la función *fn_classification* del modulo [class_classification](./code/src/class_classification.py) 
+Esta API devuelve un JSON con dos salidas, la primera, es el resultado de la predicción [Alpha, Betha], y la otra es el DataFrame ya con dicho resultado.
+
+### Para ejecutar la API en Bash
+Para ejecutar la API en Bash, es decir, en el Navegador, debemos correr el script que contiene la API, puesto que esta ya corre el uvicorn en la terminal *127.0.0.1:8000*
+   ```bash
+Summa_ML (main)
+py code/api_class_compras.py
+   ```
+<img src="./assets/fastapi_bash.JPG" alt="code" width="400"/>
+
+Esto nos disponibiliza el host mencionado, y entramos directamente a la documentación de la API
+   ```bash
+http://127.0.0.1:8000/docs
+   ```
+En esta, podemos ver la documentación de la API, y podemos ver los requerimientos que tiene
+
+<img src="./assets/fastapi_ex.JPG" alt="code" width="400"/>
+
+Así como los resultados de la misma, con un caso de ejemplo:
+
+<img src="./assets/fastapi_res.JPG" alt="code" width="400"/>
+
+Misma validación puede hacerse también en otras plataformas como Postman.
+
+## 4. Completar to_predict
+> [!NOTE]
+> El pronostico del to_predict, ya fue desarrollado con el ejercicio #2, y puede hacerse de nuevo individualmente con la API
+
+Con el modelo entrenado, podemos hacer la predicción con los datos de [to_predict.csv](./data/input/to_predict.csv)
+Utilizamos también como soporte las columnas dummies mencionadas anteriormente y llenamos con los datos pronosticados en demandas del ejercicio 1 los datos de la demanda.
+Construimos los X, y. y finalmente hacemos el pronóstico usando la función *fn_classification* del modulo [class_classification](./code/src/class_classification.py) 
+<img src="./assets/api.JPG" alt="code" width="400"/>
+   ```bash
+df_to_pred                            = pd.read_csv(os.path.join(Parameters.input_path, 'to_predict.csv'))
+df_pred_demand                        = pd.read_excel(os.path.join(Parameters.results_path, 'df_plot.xlsx'))
+df_to_pred['Demand']                  = df_pred_demand[['year_month','pred']][-3:]['pred'].values
+X, y                                  = data_to_class(df_to_pred)
+df_class, df_class_consolidate        = fn_classification(df_to_pred, X)
+   ```
+Con esta última función, el dataframe se organiza para que quede con las mismas variables dummies originales y buscamos el último modelo ganador versionado con el cuál hacemos el pronóstico de los datos de [to_predict.csv](./data/input/to_predict.csv)
+Estos resultados se almacenan en un dataframe junto con la fecha de corrida, el cuál es el resultado final y se guarda en [df_class.xlsx](./data/output/results/df_class.xlsx)
+
+<img src="./assets/df_class.JPG" alt="code" width="500"/>
+
 ## Docker
-sib
-## Teoría
+Para construir la imagen y el contenedor del Docker, procedemos a copiar la API generada dentro de la carpeta donde se almacenará la app que ejecute la imagen.
+Entonces, se crea la carpeta [devops](./devops/) y la aplicación a la carpeta [app](./devops/app). Para este ejercicio, la API pasa a llamarse [main.py](./devops/app/main.py) y se modifican las rutas que así lo requieran.
+
+<img src="./assets/devops_folder.JPG" alt="code" width="300"/><img src="./assets/app_folder.JPG" alt="code" width="300"/>
+
+Dentro de [devops](./devops/) se crea el [dockerfile](./devops/dockerfile) y se copian los requirements.txt que necesita la app para funcionar.
+
+<img src="./assets/docker_file.JPG" alt="code" width="300"/>
+
+docker_bash_create_Image.JPG
+
+Creamos la imagen del Docker en bash
+   ```bash
+Summa_ML (main)
+docker build -t api_compras .
+   ```
+<img src="./assets/fastapi_bash.JPG" alt="code" width="400"/>
+
+Ya con esto queda creada la imagen en Docker y se puede disponer de un contenedor para ejecutar la app
+
+<img src="./assets/docker_image.JPG" alt="code" width="400"/>
+
+<img src="./assets/docker_container.JPG" alt="code" width="400"/>
+
+> [!NOTE]
+> Con esto queda contruido el contenedor, y la API ya funciona tal como se mostro en el ejercicio 3 (donde se creo la API con FastAPI)
+
+## 6. Teoría
+> [!NOTE]  
+> Las respuestas de la parte teórica se encuentran en [teoria_.pdf](./devops/dockerfile), lo que esta escrito a continuación, es lo mismo que esta en dicho archivo.
+
 ### 1. 
 En la empresa GA, en el área de compras necesitan CLASIFICAR y organizar los correos que llegan a la bandeja de entrada entre 4 tipos de correos (Compras cementos, Compras energía, Compras concretos y correos generales o de otra índole). Esta tarea se le encomienda a usted, como es el Gestor SR en temas de analítica e IA puede solicitar al área interesada los recursos humanos que necesite para llevar a cabo este proyecto, también puede solicitar en tecnología todo lo que necesite, además tiene las bandejas de entrada de correos históricos de los analistas que reciben estas solicitudes con aproximadamente: 5500 correos de compras cementos, 2700 correos de compras de energía, 1100 correos de compras concretos y 12876 correos generales o de otra índole.
 Explique como resolvería este problema, metodología, algoritmos, modelos, arquitectura del proyecto etc.
    ```bash
-En principio este es ejercicio de minería de textos o de procesamiento de lenguaje natural, donde el conocimiento se adquiere adoptando bases de datos de textos. Varios estudios previos plantean que este tipo de estudio con los correos electrónico podrían estudiarse desde dos enfoques:
-Una es la categorización de texto por machine learning empleando modelos de clasificación como KNN, Naive Bayesiano Supervisado o vectores de soporte SVM y random forest, arboles de decisión e incluso, redes neuronales.  
-La otra es la coincidencia de patrones de texto y planillas. Una forma es la creación de un diccionario con palabras que tienen posibilidad de aparecer en determinado correo y se categorizan. Otra forma, y de manera más reciente, hay modelos basados en Deep learning que implementen una red neuronal basada en modelo lstm para clasificar correos.
-Entonces, la forma de trabajo sería, un etiquetado manual de correos, una exploración y comparación de correos (plantillas) y formas que puedan llegar, preprocesamiento de la data, pruebas de machine learning para construcción de un clasificador automático con alguno de los modelos mencionados anteriormente. 
-La propuesta metodológica y su arquitectura de una manera muy general, está planteado de la siguiente forma:
-1.	Se debe recoger la data, como son archivos de correo, esto se debe almacenar en HTML, y se deberían retirar las etiquetas para quedar solo con contenido textual.
-2.	Preprocesamiento, limpieza de datos, transformación, reducción de la dimensionalidad
-3.	Aprendizaje, Python usando modelos SVM, XGboost, etc. De ser muy grande la data, se sugeriría usar spark.
-4.	Evaluación y selección del modelo
-5.	Ejecución
-6.	La arquitectura, hay varios elementos, primero se debe tener guardada la información en un espacio, como un datalake, databricks y un ftp.
-Desconozco la forma, pero posiblemente se pueda llevar a cabo en azure, puntualmente en ML Ops, También se podría agruparlo en un Docker para llevarlo a despliegue en una appp, web, o front 
+Para empezar, se debe estructurar esto como un proyecto, con su respectiva metodología, repositorios, ambientes y miembros.
+Procedemos al entendimiento del negocio, objetivos y posibles soluciones. así como de los datos, para poder identificar que datos sirven, y como se deben obtener.
+Una vez identificados las fuentes de los datos y los datos, se comienza con un proceso de guardado de la información de tal suerte que tenga una estructura adecuada para empezar. Se puede hacer uso de APIs de lecturas de correos, o si esta en un correo de microsoft hacer uso de Azure, usando por ejemplo Graph, o en su defecto un RPA.
+Junto a esto se define el espacio donde se van a almacenar y si los datos serán estructurados o no estructurados.
+Finalmente podemos proceder con un modelo de clasificación de texto empleando modelos de clasificación como KNN, Naive Bayesiano Supervisado o vectores de soporte SVM y random forest, arboles de decisión, redes neuronales e incluso PLN.  
+Otro recurso a usarse pueden ser los PLN, LLM y se puede auxiliar de librerías como Transformers de HuggingFace con datos ya entrenados, o una elaboración propia de un diccionario con palabras que tienen posibilidad de aparecer en determinado correo y se categorizan.
+
+Obtenido el resultado, se disponibiliza el modelo ya sea con una API, docker o ya en Azure con un procesamiento orchestado desde Data Factory o Databricks, o que se habilite azure function o logic app.
+
+Por último, si es necesario, se construye un front ya sea cómo plataforma web o en tableros de PBI.
+
+1. Caso de negocio
+2. Entendimiento del negocio y data
+3. Obtener información, limpiarla y almacenarla.
+4. Modelación
+5. Orchestation, llevar a productivo, disponibilizar el modelo.
+6. Exposición o visualización (Si aplica)
    ```
 ### 2.
 Seis meses después de haber desplegado un modelo de regresión en producción, los usuarios se dan cuenta que las predicciones que este está dando no son tan acertadas, se le encarga a usted como Gestor SR en temas de IA que revise que puede estar sucediendo.
@@ -280,7 +366,7 @@ Seis meses después de haber desplegado un modelo de regresión en producción, 
 ¿De ser así, que haría usted para corregir esto?
 Explique sus respuestas.
   ```bash
-Si, el modelo puede estar perdiendo predicción dado que esta dejando de lado los eventos y situaciones que vienen ocurriendo en los últimos 6 meses que afectan el comportamiento de la predicción, por tanto, es importante tener un tiempo de reentramiento más corto para que estos efectos no sigan ocurriendo. La forma de evidenciar si está o no perdiendo efectividad es calculando las predicciones versus la realidad y calcular el valor de algunas métricas de acierto de predicción como el MAPE, el RMSE o el R2, y compararlas con las que dieron en la última puesta en producción en su entrenamiento, si es evidente su caída, podemos asumir que el modelo perdió asertividad.
+Si, el modelo puede estar perdiendo predicción dado que esta dejando de lado los eventos y situaciones que vienen ocurriendo en los últimos 6 meses que afectan el comportamiento de la predicción, por tanto, es importante tener un tiempo de reentramiento más corto para que estos efectos no sigan ocurriendo. La forma de evidenciar si está o no perdiendo efectividad es calculando las predicciones versus la realidad y calcular el valor de algunas métricas de acierto de predicción y compararlas con las que dieron en la última puesta en producción en su entrenamiento, si es evidente su caída, podemos asumir que el modelo perdió asertividad.
 Como lo mencioné anteriormente, una de las formas de asegurar que esto no ocurra, es reentrenando los modelos con menor tiempo, para así posibilitar que los modelos aprendan lo que sucedió recientemente y calculen un pronóstico mucho más semejante a la realidad, puesto que es probable que ocurriesen eventos de datos atípicos, tendencias, estaciones o incluso situaciones geopolíticas.
 Si es muy difícil poder lograr que se reentrene por los altos costos, se debería hacer una especie de alerta que muestre el nivel de acierto que va teniendo semana a semana y poder haciendo ajustes que no requieran modelación (por ejemplo, la suma de datos atípicos, etc).
    ```
@@ -288,5 +374,6 @@ Si es muy difícil poder lograr que se reentrene por los altos costos, se deber�
 3.	Su equipo de trabajo está trabajando en un chatbot con generación de texto utilizando el modelo GPT-3.5, según cómo funciona este modelo, ¿cómo haría usted para hacer que las respuestas del chatbot estén siempre relacionadas a conseguir cierta información particular del usuario y no empiece a generar texto aleatorio sobre cualquier tema? 
 Explique su respuesta.
   ```bash
-Le preguntaré a ChatGPT
+Según se indica, el chatbot es propio del desarrollo, por ende, se puede personalizar, ajustar los parametros, mantener prompts específicos y dando contexto persistentemente.
+Por último, se puede hacer fine tunning o Few-shot Learning
    ```

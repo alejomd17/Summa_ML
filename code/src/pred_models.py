@@ -29,10 +29,12 @@ warnings.filterwarnings('ignore')
 class Models():
     def sarima_model(df_train, df_test, steps):
         sarima = auto_arima(df_train.tolist(),
-                                        # start_p=1, start_q=1,
+                                        start_p=0, start_q=0,
+                                        test='adf',
                                         seasonal=True, 
-                                        stationary=True,
+                                        # stationary=True,
                                         m=12,
+                                        lags=12,
                                         # start_P=0, start_Q=0,
                                         # max_p=3, max_q=3, 
                                         # max_P=5, max_Q=5,
@@ -42,8 +44,8 @@ class Models():
                                         error_action='ignore',
                                         suppress_warnings=True,
                                         # stepwise=True,
-                                        # random_state=123,   
-                                        # n_fits=100,
+                                        random_state=123,   
+                                        n_fits=50,
                                         # trend=None,
                                         # method='nm',
                                         # information_criterion='aic'
@@ -59,18 +61,7 @@ class Models():
 
         param_grid = {'lasso__alpha': np.logspace(-5, 5, 10)}
 
-        # Lags used as predictors
-        if len(df_train) > (2 * steps):
-            lags_grid = [
-                math.ceil(
-                    steps * 0.23),
-                math.ceil(
-                    steps * 0.46),
-                math.ceil(
-                    steps * 0.9)]
-        else:
-            lags_grid = [math.ceil(steps * 0.23), math.ceil(steps * 0.46)]
-            # lags_grid = [6, 12, 18] #36
+        lags_grid = [6, 12, 18] #36
 
         results_grid = grid_search_forecaster(
             forecaster          = model_lasso,
@@ -96,20 +87,13 @@ class Models():
             regressor = RandomForestRegressor(random_state=123), # Este valor será remplazado en el grid search
             lags = 12)
 
-        # Hiperparámetros del regresor
-        param_grid = {'n_estimators': [100, 300, 500],
-                'max_depth': [3, 5, 10]}
 
-        if len(df_train) > (2 * steps):
-            lags_grid = [
-                math.ceil(
-                    steps * 0.23),
-                math.ceil(
-                    steps * 0.46),
-                math.ceil(
-                    steps * 0.9)]
-        else:
-            lags_grid = [math.ceil(steps * 0.23), math.ceil(steps * 0.46)]
+        # Lags utilizados como predictores
+        lags_grid = [3, 6, 12]
+
+        # Hiperparámetros del regresor
+        param_grid = {'n_estimators': [100, 500],
+                'max_depth': [3, 5, 10]}
             
         resultados_grid = grid_search_forecaster(
                                 forecaster         = forecaster_rf,
@@ -119,7 +103,7 @@ class Models():
                                 steps              = steps,
                                 refit              = False,
                                 metric             = 'mean_squared_error',
-                                initial_train_size = int(len(df_train)*0.9),
+                                initial_train_size = int(len(df_train)*0.5),
                                 # fixed_train_size   = False,
                                 return_best        = True,
                                 verbose            = False
@@ -139,14 +123,9 @@ class Models():
             'learning_rate': [0.01, 0.1]
             }
 
+
         # Lags used as predictors
-        if len(df_train) > (2 * steps):
-            lags_grid = [
-                math.ceil(steps * 0.23),
-                math.ceil(steps * 0.46),
-                math.ceil(steps * 0.9)] 
-        else:
-            lags_grid = [math.ceil(steps * 0.23), math.ceil(steps * 0.46)]
+        lags_grid = [8, 12, 24]
 
 
         results_grid = grid_search_forecaster(
@@ -157,7 +136,7 @@ class Models():
                 steps              = steps,
                 refit              = False,
                 metric             = 'mean_squared_error',
-                initial_train_size = int(len(df_train)*0.8), # Model is trained with trainign data
+                initial_train_size = int(len(df_train)*0.5), # Model is trained with trainign data
                 # fixed_train_size   = False,
                 return_best        = True,
                 verbose            = False
